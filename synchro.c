@@ -76,7 +76,7 @@ inc_cas(void *arg __attribute__((unused)))
     
     for (i = 0; i < INC_ITERATIONS; i++) {
         local_count = counter;
-        while (!(__sync_bool_compare_and_swap(&counter, local_count, (counter += INCREMENT)))){
+        while (!(__sync_bool_compare_and_swap(&counter, local_count, (local_count + INCREMENT)))){
             //printf("Counter: %d\nLocal counter: %d\ni: %d\n", counter, local_count, i); 
             local_count = counter;
         }
@@ -94,7 +94,7 @@ dec_cas(void *arg __attribute__((unused)))
      * variable */
     for (i = 0; i < DEC_ITERATIONS; i++) {
         local_count = counter;
-        while (!(__sync_bool_compare_and_swap(&counter, local_count, (counter += DECREMENT)))){
+        while (!(__sync_bool_compare_and_swap(&counter, local_count, (local_count - DECREMENT)))){
             local_count = counter;
         }
     }
@@ -112,7 +112,7 @@ inc_atomic(void *arg __attribute__((unused)))
 
     /* TODO 3: Use atomic primitives to manipulate the shared variable */
     for (i = 0; i < INC_ITERATIONS; i++) {
-        counter += DECREMENT; // You need to replace this
+        __sync_fetch_and_add(&counter, INCREMENT);
     }
 
     return NULL;
@@ -125,7 +125,7 @@ dec_atomic(void *arg __attribute__((unused)))
 
     /* TODO 3: Use atomic primitives to manipulate the shared variable */
     for (i = 0; i < DEC_ITERATIONS; i++) {
-        counter += DECREMENT; // You need to replace this
+        __sync_fetch_and_sub(&counter, DECREMENT);
     }
 
     return NULL;
