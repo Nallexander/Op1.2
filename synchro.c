@@ -37,12 +37,14 @@ void *
 inc_mutex(void *arg __attribute__((unused)))
 {
     int i;
-
+  
     /* TODO 1: Protect access to the shared variable */
+
+    pthread_mutex_lock(&mutex);
     for (i = 0; i < INC_ITERATIONS; i++) {
         counter += INCREMENT;
     }
-
+    pthread_mutex_unlock(&mutex);
     return NULL;
 }
 
@@ -52,10 +54,12 @@ dec_mutex(void *arg __attribute__((unused)))
     int i;
 
     /* TODO 1: Protect access to the shared variable */
+    
+    pthread_mutex_lock(&mutex);
     for (i = 0; i < DEC_ITERATIONS; i++) {
         counter -= DECREMENT;
     }
-
+    pthread_mutex_unlock(&mutex);
     return NULL;
 }
 
@@ -66,11 +70,16 @@ void *
 inc_cas(void *arg __attribute__((unused)))
 {
     int i;
-
+    int local_count;
     /* TODO 2: Use the compare and swap primitive to manipulate the shared
      * variable */
+    
     for (i = 0; i < INC_ITERATIONS; i++) {
-        counter += INCREMENT; // You need to replace this
+        local_count = counter;
+        while (!(__sync_bool_compare_and_swap(&counter, local_count, (counter += INCREMENT)))){
+            //printf("Counter: %d\nLocal counter: %d\ni: %d\n", counter, local_count, i); 
+            local_count = counter;
+        }
     }
 
     return NULL;
@@ -80,11 +89,14 @@ void *
 dec_cas(void *arg __attribute__((unused)))
 {
     int i;
-
+    int local_count;
     /* TODO 2: Use the compare and swap primitive to manipulate the shared
      * variable */
     for (i = 0; i < DEC_ITERATIONS; i++) {
-        counter += DECREMENT; // You need to replace this
+        local_count = counter;
+        while (!(__sync_bool_compare_and_swap(&counter, local_count, (counter += DECREMENT)))){
+            local_count = counter;
+        }
     }
 
     return NULL;
