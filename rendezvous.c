@@ -23,16 +23,19 @@
  * predictable way. Both should perform iteration 1 before iteration 2
  * and then 2 before 3 etc. */
 
+sem_t semA;
+sem_t semB;
+
 void *
 threadA(void *param __attribute__((unused)))
 {
     int i;
-
+    
     for (i = 0; i < LOOPS; i++) {
-
+        sem_wait(&semA);
 	printf("threadA --> %d iteration\n", i);
 	sleep(rand() % MAX_SLEEP_TIME);
-
+        sem_post(&semB);
     }
 
     pthread_exit(0);
@@ -45,11 +48,10 @@ threadB(void *param  __attribute__((unused)))
     int i;
 
     for (i = 0; i < LOOPS; i++) {
-
-
+        sem_wait(&semB);
 	printf("threadB --> %d iteration\n", i);
 	sleep(rand() % MAX_SLEEP_TIME);
-
+        sem_post(&semA);
     }
 
     pthread_exit(0);
@@ -58,6 +60,14 @@ threadB(void *param  __attribute__((unused)))
 int
 main()
 {
+    if (sem_init(&semA, 0, 0) == -1){
+        printf("ERROR\n");
+    }
+    
+    if (sem_init(&semB, 0, 1) == -1){
+    printf("ERROR\n");
+    }
+    
     pthread_t tidA, tidB;
 
     srand(time(NULL));
